@@ -79,16 +79,7 @@ namespace Hangfire.Firebird
             }
 
             if (options.PrepareSchemaIfNecessary)
-            {
-                var connectionStringBuilder = new FbConnectionStringBuilder(_connectionString);
-                if (!File.Exists(connectionStringBuilder.Database))
-                    FbConnection.CreateDatabase(_connectionString, 16384, true, false);
-
-                using (var connection = CreateAndOpenConnection())
-                {
-                    FirebirdObjectsInstaller.Install(connection);
-                }
-            }
+                PrepareSchemaIfNecessary();
 
             InitializeQueueProviders();
         }
@@ -114,6 +105,29 @@ namespace Hangfire.Firebird
         }
 
         public PersistentJobQueueProviderCollection QueueProviders { get; private set; }
+
+
+        /// <summary>
+        /// Creates database, prepares schema and update if necessary.
+        /// </summary>
+        public void PrepareSchemaIfNecessary()
+        {
+            var connectionStringBuilder = new FbConnectionStringBuilder(_connectionString);
+
+            try
+            {
+                using (var c = CreateAndOpenConnection()) { }
+            }
+            catch
+            {
+                FbConnection.CreateDatabase(_connectionString, 16384, true, false);
+            }
+
+            using (var connection = CreateAndOpenConnection())
+            {
+                FirebirdObjectsInstaller.Install(connection);
+            }
+        }
 
         public override IMonitoringApi GetMonitoringApi()
         {
