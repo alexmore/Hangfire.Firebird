@@ -61,7 +61,8 @@ namespace Hangfire.Firebird
                         FbScript fbScript = new FbScript(script);
                         fbScript.Parse();
 
-                        FbBatchExecution fbBatch = new FbBatchExecution(connection, fbScript);
+                        FbBatchExecution fbBatch = new FbBatchExecution(connection);
+                        fbBatch.AppendSqlStatements(fbScript);
                         fbBatch.Execute(true);
 
                         UpdateVersion(connection, version);
@@ -109,7 +110,7 @@ namespace Hangfire.Firebird
 
             if (tableExists)
                 alreadyApplied = Convert.ToBoolean(connection.ExecuteScalar(string.Format(@"SELECT 1 FROM ""HANGFIRE.SCHEMA"" WHERE ""VERSION"" = {0};", version)));
-              
+
             return alreadyApplied;
         }
 
